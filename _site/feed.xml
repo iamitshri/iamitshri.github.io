@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2025-05-25T12:04:35-06:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Learning Journey</title><subtitle>Backend engineer sharing learning experiences</subtitle><author><name>Amit Shri</name></author><entry><title type="html">Step Functions Data Flow: A Beginner’s Guide</title><link href="http://localhost:4000/devops/aws/step-functions-data-flow-a-beginners-guide/" rel="alternate" type="text/html" title="Step Functions Data Flow: A Beginner’s Guide" /><published>2025-05-25T00:00:00-06:00</published><updated>2025-05-25T00:00:00-06:00</updated><id>http://localhost:4000/devops/aws/step-functions-data-flow-a-beginners-guide</id><content type="html" xml:base="http://localhost:4000/devops/aws/step-functions-data-flow-a-beginners-guide/"><![CDATA[<h1 id="step-functions-data-flow-a-beginners-guide">Step Functions Data Flow: A Beginner’s Guide</h1>
+
+<p>AWS Step Functions is a serverless orchestrator that allows you to build resilient workflows using various AWS services. Understanding how data flows and is transformed between states is fundamental to leveraging its power. This guide is designed for beginners to grasp these core concepts.</p>
+
+<h2 id="state-machine-fundamentals-for-beginners">State Machine Fundamentals for Beginners</h2>
+
+<p>At its heart, a Step Functions workflow is a <strong>state machine</strong>. You define a series of <strong>states</strong>, the sequence they execute in, and how data is passed between them.</p>
+
+<ul>
+  <li><strong>States:</strong> These are the building blocks of your workflow. Each state represents a single unit of work. This could be invoking a Lambda function, running an AWS Batch job, publishing to an SNS topic, or even waiting for a certain amount of time.</li>
+  <li><strong>Transitions:</strong> States are connected by transitions. After a state completes its work, the state machine transitions to the next state as defined in your workflow.</li>
+  <li><strong>Execution:</strong> An execution is a single run of your state machine. Each execution has its own isolated data.</li>
+</ul>
+
+<h2 id="the-json-data-blob-your-workflows-lifeblood">The JSON Data Blob: Your Workflow’s Lifeblood</h2>
+
+<p>Data in Step Functions is represented as a JSON object. This JSON “blob” is passed from one state to the next.</p>
+
+<ul>
+  <li><strong>Execution Input:</strong> When you start a new execution, you can provide an initial JSON input. This becomes the first state’s input.</li>
+  <li><strong>State Input:</strong> The JSON data a state receives when it starts.</li>
+  <li><strong>State Output:</strong> The JSON data a state produces upon completion. <strong>By default, the output of one state becomes the input of the next state.</strong></li>
+</ul>
+
+<h2 id="key-fields-for-data-manipulation">Key Fields for Data Manipulation</h2>
+
+<p>Step Functions provides powerful fields within your state definitions to control and shape this JSON data. Let’s explore the most important ones: <code class="language-plaintext highlighter-rouge">InputPath</code>, <code class="language-plaintext highlighter-rouge">Parameters</code>, <code class="language-plaintext highlighter-rouge">ResultSelector</code>, <code class="language-plaintext highlighter-rouge">ResultPath</code>, and <code class="language-plaintext highlighter-rouge">OutputPath</code>.</p>
+
+<h3 id="1-inputpath-filtering-a-states-input">1. <code class="language-plaintext highlighter-rouge">InputPath</code>: Filtering a State’s Input</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">InputPath</code> field allows you to select a portion of the incoming JSON data to be the effective input for the current state. You use a <a href="https://stedolan.github.io/jq/manual/#path%20expressions">JSONPath</a> expression to specify which part of the input to use.</p>
+
+<p><strong>How it works:</strong>
+Imagine your state receives this JSON input:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"comment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This is the initial data for the execution"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12345"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PO-67890"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"customerInfo"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Jane Doe"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jane.doe@example.com"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>If you set <code class="language-plaintext highlighter-rouge">InputPath: "$.details"</code>, then the actual data processed by your state (e.g., passed to a Lambda function) will only be:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12345"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PO-67890"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<ul>
+  <li>If <code class="language-plaintext highlighter-rouge">InputPath</code> is omitted or <code class="language-plaintext highlighter-rouge">null</code>, the entire input JSON is used (<code class="language-plaintext highlighter-rouge">$</code>).</li>
+</ul>
+
+<h3 id="2-parameters-constructing-the-input-for-a-task">2. <code class="language-plaintext highlighter-rouge">Parameters</code>: Constructing the Input for a Task</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">Parameters</code> field allows you to create a custom JSON object to be passed as input to a state’s resource (like a Lambda function or an ECS task). You can use JSONPath expressions to extract values from the state’s input and combine them with static values.</p>
+
+<p><strong>How it works:</strong>
+Keys ending with <code class="language-plaintext highlighter-rouge">.$</code> indicate that their value is a JSONPath expression to be applied to the state’s input. Other keys will have static values.</p>
+
+<p>Using the same initial input:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"comment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Initial data"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12345"</span><span class="p">,</span><span class="w"> </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"customerInfo"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Jane Doe"</span><span class="p">,</span><span class="w"> </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jane.doe@example.com"</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>And this <code class="language-plaintext highlighter-rouge">Parameters</code> definition:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"Parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"product_id.$"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$.details.productId"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"customer_email.$"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$.customerInfo.email"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"processing_status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"execution_id.$"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$$.Execution.Id"</span><span class="w"> 
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>The input sent to the state’s resource (e.g., Lambda) will be:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"product_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12345"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"customer_email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jane.doe@example.com"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"processing_status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"execution_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arn:aws:states:us-east-1:123456789012:execution:MyStateMachine:my-execution-name"</span><span class="w"> 
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p><em>Note: <code class="language-plaintext highlighter-rouge">$$</code> provides access to context objects, like execution metadata (<code class="language-plaintext highlighter-rouge">$$.Execution.Id</code>).</em></p>
+
+<h3 id="3-resultselector-shaping-a-tasks-raw-output">3. <code class="language-plaintext highlighter-rouge">ResultSelector</code>: Shaping a Task’s Raw Output</h3>
+
+<p>After a task (like a Lambda function) finishes, it produces an output (its “result”). The <code class="language-plaintext highlighter-rouge">ResultSelector</code> field allows you to manipulate this raw result <em>before</em> it’s combined with the state’s original input via <code class="language-plaintext highlighter-rouge">ResultPath</code>. You can create a new JSON object from the task’s result using key-value pairs, where values can be static or selected from the task’s result using JSONPath.</p>
+
+<p><strong>How it works:</strong>
+Suppose your Lambda function returns this JSON:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"statusCode"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"body"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Successfully processed"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"processedItems"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"logStreamName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024/07/16/[$LATEST]abcdef123456"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>And you have this <code class="language-plaintext highlighter-rouge">ResultSelector</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"ResultSelector"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"statusMessage.$"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$.body.message"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"itemCount.$"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$.body.processedItems"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"hasErrors"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> 
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>The output from <code class="language-plaintext highlighter-rouge">ResultSelector</code> (which then feeds into <code class="language-plaintext highlighter-rouge">ResultPath</code>) will be:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"statusMessage"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Successfully processed"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"itemCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"hasErrors"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="4-resultpath-integrating-task-output-with-state-input">4. <code class="language-plaintext highlighter-rouge">ResultPath</code>: Integrating Task Output with State Input</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">ResultPath</code> field specifies where to place the (potentially <code class="language-plaintext highlighter-rouge">ResultSelector</code>-transformed) output of the task back into the <em>original state input</em>.</p>
+
+<p><strong>How it works:</strong>
+Let the state’s original input be <code class="language-plaintext highlighter-rouge">original_input_json</code>.
+Let the result from the task (after <code class="language-plaintext highlighter-rouge">ResultSelector</code>, if present) be <code class="language-plaintext highlighter-rouge">task_result_json</code>.</p>
+
+<ul>
+  <li><strong><code class="language-plaintext highlighter-rouge">ResultPath: null</code> (default):</strong> The <code class="language-plaintext highlighter-rouge">task_result_json</code> <em>replaces</em> the <code class="language-plaintext highlighter-rouge">original_input_json</code> entirely. The state’s output becomes just <code class="language-plaintext highlighter-rouge">task_result_json</code>.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">ResultPath: "$"</code>:</strong> The <code class="language-plaintext highlighter-rouge">task_result_json</code> <em>replaces</em> the <code class="language-plaintext highlighter-rouge">original_input_json</code> entirely. Same as <code class="language-plaintext highlighter-rouge">null</code>.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">ResultPath: "$.someField"</code>:</strong> The <code class="language-plaintext highlighter-rouge">task_result_json</code> is inserted into the <code class="language-plaintext highlighter-rouge">original_input_json</code> at the path specified by <code class="language-plaintext highlighter-rouge">someField</code>. For example, if <code class="language-plaintext highlighter-rouge">original_input_json</code> is <code class="language-plaintext highlighter-rouge">{"a": 1}</code> and <code class="language-plaintext highlighter-rouge">task_result_json</code> is <code class="language-plaintext highlighter-rouge">{"b": 2}</code>, and <code class="language-plaintext highlighter-rouge">ResultPath: "$.taskOutput"</code>, the effective input to <code class="language-plaintext highlighter-rouge">OutputPath</code> becomes <code class="language-plaintext highlighter-rouge">{"a": 1, "taskOutput": {"b": 2}}</code>.</li>
+  <li><strong>If <code class="language-plaintext highlighter-rouge">ResultPath</code> points to an existing field, that field is overwritten.</strong></li>
+  <li><strong>If <code class="language-plaintext highlighter-rouge">ResultPath</code> is <code class="language-plaintext highlighter-rouge">null</code>, the original state input is discarded, and only the task’s result (after <code class="language-plaintext highlighter-rouge">ResultSelector</code>) is passed to <code class="language-plaintext highlighter-rouge">OutputPath</code>.</strong></li>
+</ul>
+
+<p><strong>Example:</strong>
+Original State Input:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w"> </span><span class="nl">"originalKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"originalValue"</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>Task Result (after <code class="language-plaintext highlighter-rouge">ResultSelector</code>):</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w"> </span><span class="nl">"taskStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SUCCESS"</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<ol>
+  <li>If <code class="language-plaintext highlighter-rouge">ResultPath: "$.taskDetails"</code>:
+Output fed to <code class="language-plaintext highlighter-rouge">OutputPath</code>:
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"originalKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"originalValue"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"taskDetails"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"taskStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SUCCESS"</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+  <li>If <code class="language-plaintext highlighter-rouge">ResultPath: null</code>:
+Output fed to <code class="language-plaintext highlighter-rouge">OutputPath</code>:
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w"> </span><span class="nl">"taskStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SUCCESS"</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="5-outputpath-filtering-the-final-state-output">5. <code class="language-plaintext highlighter-rouge">OutputPath</code>: Filtering the Final State Output</h3>
+
+<p>Finally, <code class="language-plaintext highlighter-rouge">OutputPath</code> allows you to filter the JSON data that results from the <code class="language-plaintext highlighter-rouge">ResultPath</code> logic. This filtered JSON becomes the actual output of the state, passed on to the next state.</p>
+
+<p><strong>How it works:</strong>
+It uses a JSONPath expression to select a portion of the JSON data produced after <code class="language-plaintext highlighter-rouge">ResultPath</code> has done its work.</p>
+
+<p><strong>Example:</strong>
+After <code class="language-plaintext highlighter-rouge">ResultPath</code>, the intermediate JSON is:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"originalKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"originalValue"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"taskDetails"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SUCCESS"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"executionId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"exec-abc-123"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>If <code class="language-plaintext highlighter-rouge">OutputPath: "$.taskDetails.data"</code>, the final output of the state will be:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w"> </span><span class="nl">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>If <code class="language-plaintext highlighter-rouge">OutputPath</code> is omitted or <code class="language-plaintext highlighter-rouge">null</code>, the entire JSON object after <code class="language-plaintext highlighter-rouge">ResultPath</code> processing is passed as the state’s output.</p>
+
+<h2 id="order-of-operations-a-summary">Order of Operations: A Summary</h2>
+
+<ol>
+  <li><strong><code class="language-plaintext highlighter-rouge">InputPath</code></strong>: Filters the state’s input.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">Parameters</code></strong>: Constructs the input for the state’s task (e.g., Lambda).</li>
+  <li><em>(Task Execution)</em></li>
+  <li><strong><code class="language-plaintext highlighter-rouge">ResultSelector</code></strong>: Shapes the raw result from the task.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">ResultPath</code></strong>: Merges the (selected) task result back into the original state input.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">OutputPath</code></strong>: Filters the final output of the state.</li>
+</ol>
+
+<p>Understanding these data manipulation fields is key to building flexible and powerful Step Functions workflows. Start with simple use cases and gradually incorporate these fields as your workflows become more complex. The AWS Step Functions console’s execution visualization is an invaluable tool for seeing how data transforms at each step. Happy orchestrating!</p>]]></content><author><name>Amit Shri</name></author><category term="devops" /><category term="aws" /><category term="step-functions" /><category term="data-flow" /><category term="serverless" /><summary type="html"><![CDATA[A beginner-friendly guide to understanding data flow and state manipulation in AWS Step Functions.]]></summary></entry></feed>
