@@ -2,6 +2,13 @@
 
 A personal blog site built with Jekyll and hosted on GitHub Pages, sharing learning experiences in backend engineering.
 
+## 🚀 **Quick Run Local Site**
+
+```bash
+bundle exec jekyll serve --livereload --drafts
+```
+**Visit: http://localhost:4000**
+
 ## 📝 **Want to Blog? Start Here!**
 
 **👉 [BLOGGING_GUIDE.md](BLOGGING_GUIDE.md) - Simple guide for creating blog posts**
