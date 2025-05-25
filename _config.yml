@@ -1,1 +1,62 @@
-theme: jekyll-theme-time-machine
+# Site settings
+title: "Learning Journey"
+name: "Amit Shri"
+description: "Backend engineer sharing learning experiences"
+url: "https://iamitshri.github.io"
+repository: "iamitshri/iamitshri.github.io"
+
+# Theme configuration
+minimal_mistakes_skin: "dark"  # Primary dark theme
+locale: "en-US"
+
+# Author settings
+author:
+  name: "Amit Shri"
+  bio: "Backend Software Engineer | Java, Node.js, Python, Bash, CI/CD, Cloud"
+  location: "Your Location" # Please replace "Your Location" with your actual location
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/iamitshri"
+
+# Collections for better organization
+collections:
+  posts:
+    output: true
+    permalink: /:categories/:title/
+
+# Pagination
+paginate: 5
+paginate_path: /page:num/
+
+# Archives
+category_archive:
+  type: liquid
+  path: /categories/
+tag_archive:
+  type: liquid
+  path: /tags/
+
+# Defaults for posts
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: false # Disabled comments as per common preference, can be enabled if needed
+      share: true
+      related: true
+      show_date: true
+
+# Plugins
+remote_theme: "mmistakes/minimal-mistakes@4.24.0"
+plugins:
+  - jekyll-remote-theme
+  - jekyll-include-cache
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-feed
