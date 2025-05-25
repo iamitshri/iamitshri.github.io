@@ -18,6 +18,10 @@ author:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/iamitshri"
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      url: "https://www.linkedin.com/in/amitshrigondekar"
+
 
 # Collections for better organization
 collections:
@@ -29,13 +33,6 @@ collections:
 paginate: 5
 paginate_path: /page:num/
 
-# Archives
-category_archive:
-  type: liquid
-  path: /categories/
-tag_archive:
-  type: liquid
-  path: /tags/
 
 # Defaults for posts
 defaults:
