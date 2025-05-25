@@ -11,13 +11,7 @@ locale: "en-US"
 
 # Author settings
 author:
-  name: "Amit Shri"
-  bio: "Backend Software Engineer | Java, Node.js, Python, Bash, CI/CD, Cloud"
-  location: "Your Location" # Please replace "Your Location" with your actual location
   links:
-    - label: "GitHub"
-      icon: "fab fa-fw fa-github"
-      url: "https://github.com/iamitshri"
     - label: "LinkedIn"
       icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/amitshrigondekar"
