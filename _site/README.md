@@ -2,6 +2,12 @@
 
 A personal blog site built with Jekyll and hosted on GitHub Pages, sharing learning experiences in backend engineering.
 
+## 📝 **Want to Blog? Start Here!**
+
+**👉 [BLOGGING_GUIDE.md](BLOGGING_GUIDE.md) - Simple guide for creating blog posts**
+
+This guide is for people who want to write blogs without learning Jekyll internals.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
