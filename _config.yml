@@ -22,6 +22,7 @@ author:
       icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/amitshrigondekar"
 
+
 # Collections for better organization
 collections:
   posts:
@@ -31,6 +32,7 @@ collections:
 # Pagination
 paginate: 5
 paginate_path: /page:num/
+
 
 # Defaults for posts
 defaults:
