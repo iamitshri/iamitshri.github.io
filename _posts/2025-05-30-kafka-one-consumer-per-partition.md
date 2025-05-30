@@ -3,7 +3,7 @@ layout: single
 title: "Why Kafka Allows Only One Consumer Per Partition Within a Consumer Group"
 categories: [backend, kafka]
 tags: [kafka, consumer-groups, partitions, distributed-systems, event-streaming]
-date: 2025-05-26
+date: 2025-05-30
 excerpt: "Understanding the fundamental design principles behind Kafka's consumer group architecture and why each partition can only be assigned to one consumer within a consumer group."
 author_profile: true
 read_time: true
